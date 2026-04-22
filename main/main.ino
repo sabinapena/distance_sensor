@@ -1,28 +1,24 @@
 #include <Wire.h> // for 12c communication
-#include <Adafruit_VL53L0X.h>
+#include <VL53L0X.h>
 
-Adafruit_VL53L0X lox = Adafruit_VL53L0X(); //instance
+VL53L0X sensor; //instance
 
 void setup(){
-  Serial.begin(115200); // initiate serial communication
-  //Wire.begin();
-  delay(1000);
+  Serial.begin(9600); // initiate serial communication
+  Wire.begin();
 
-  if(!lox.begin()){
-    Serial.println("Failed to boot dist sensor");
-    while(1);
-  }
-  Serial.println("Sensor ready\n");
+  sensor.init();
+  sensor.setTimeout(900);
+
+  sensor.startContinuous();
 }
 
-void loop(){
-  VL53L0X_RangingMeasurementData_t measure;
-  lox.rangingTest(&measure);
-  if(measure.RangeStatus != 4){
-    Serial.print("Distance (mm): ");
-    Serial.println(measure.RangeMilliMeter);
-  }else{
-    Serial.println("Object out of range");
-  }
-  delay(100);
+void loop()
+{
+  int distance = sensor.readRangeContinuousMillimeters();
+  Serial.print("Distance (mm): ");
+  Serial.print(distance);
+  Serial.print("\n");
+  if (sensor.timeoutOccurred()) { Serial.print(" TIMEOUT\n"); }
+  delay(500);
 }
