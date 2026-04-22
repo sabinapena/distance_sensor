@@ -5,7 +5,6 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X(); //instance
 
 void setup(){
   Serial.begin(115200); // initiate serial communication
-  Wire.begin();
   delay(1000);
 
   if(!lox.begin()){
