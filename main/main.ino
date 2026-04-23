@@ -1,3 +1,8 @@
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
 const int trigPin = 7;
 const int echoPin = 8;
 
@@ -6,6 +11,17 @@ void setup() {
   Serial.begin(9600);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+
+  // initialize display
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Team Michelle");
+  delay(5000);
+  lcd.clear();
+  lcd.setCursor(0,0);  //Set LCD cursor to upper left corner, column 0, row 0
+  lcd.print("Distance:");//Print Message on First Row
 }
 
 void loop() {
@@ -35,6 +51,12 @@ void loop() {
   Serial.print(cm);
   Serial.print("cm");
   Serial.println();
+
+  lcd.setCursor(9,0);   
+  lcd.print("                         ");  
+  lcd.setCursor(9,0);    
+  lcd.print(                cm); //Print measured distance
+  lcd.print(" cm");  //Print your units.
 
   delay(1000);
 }
