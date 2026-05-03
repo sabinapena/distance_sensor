@@ -1,10 +1,12 @@
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
+#include <array>
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 const int trigPin = 7;
 const int echoPin = 8;
+constexpr std::array<int, 14> lookup = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25};
 
 void setup() {
   // initialize serial communication:
@@ -22,15 +24,17 @@ void setup() {
   lcd.clear();
   lcd.setCursor(0,0);  //Set LCD cursor to upper left corner, column 0, row 0
   lcd.print("Distance:");//Print Message on First Row
+  lcd.setCursor(0,1);  //Set LCD cursor to upper left corner, column 0, row 0
+  lcd.print("Height:");//Print Message on First Row
 }
 
 void loop() {
   // establish variables for duration of the ping, and the distance result
   // in inches and centimeters:
-  long duration, inches, cm;
+  long duration, inches, cm, height;
 
   // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
-  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
+  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:  
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
@@ -45,10 +49,15 @@ void loop() {
   // convert the time into a distance
   inches = microsecondsToInches(duration);
   cm = microsecondsToCentimeters(duration);
+  height = lookup[cm]; 
+
 
   Serial.print(inches);
   Serial.print("in, ");
   Serial.print(cm);
+  Serial.print("cm");
+  Serial.println();
+  Serial.print(height);
   Serial.print("cm");
   Serial.println();
 
@@ -56,6 +65,12 @@ void loop() {
   lcd.print("                         ");  
   lcd.setCursor(9,0);    
   lcd.print(                cm); //Print measured distance
+  lcd.print(" cm");  //Print your units.
+
+  lcd.setCursor(9,1);   
+  lcd.print("                         ");  
+  lcd.setCursor(9,1);    
+  lcd.print(                height); //Print measured height
   lcd.print(" cm");  //Print your units.
 
   delay(1000);
@@ -76,3 +91,4 @@ long microsecondsToCentimeters(long microseconds) {
   // take half of the distance travelled.
   return microseconds / 29 / 2;
 }
+
