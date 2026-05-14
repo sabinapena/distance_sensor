@@ -1,78 +1,78 @@
-#include <Wire.h> 
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+#include <VL53L0X.h>
+#include <array>
+#include <cmath>
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+VL53L0X sensor;
 
-const int trigPin = 7;
-const int echoPin = 8;
+
+double getAngle(double opp, double adj) {
+    double angleRad = atan(opp / adj);   // angle in radians
+    double angleDeg = angleRad * 180.0 / M_PI; // convert to degrees
+    return angleDeg;
+}
+
 
 void setup() {
-  // initialize serial communication:
   Serial.begin(9600);
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  Wire.begin();
 
-  // initialize display
   lcd.init();
   lcd.backlight();
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Team Michelle");
+  lcd.print("Hallo Michelle");
+
   delay(5000);
+  // Initialize sensor
+
+  //Serial.println("Initializing sensor...");
+  if (!sensor.init()) {
+    lcd.clear();
+    lcd.print("Failed to detect VL53L0X!");
+    while (1);
+  }
+
+  sensor.setTimeout(500);
+  sensor.startContinuous();
+
+  // Initialize LCD
+
   lcd.clear();
-  lcd.setCursor(0,0);  //Set LCD cursor to upper left corner, column 0, row 0
-  lcd.print("Distance:");//Print Message on First Row
+  lcd.setCursor(0,0);
+  lcd.print("Angle:");
+
+  Serial.println("Setup complete ");
 }
 
 void loop() {
-  // establish variables for duration of the ping, and the distance result
-  // in inches and centimeters:
-  long duration, inches, cm;
+  int distance_mm = sensor.readRangeContinuousMillimeters();
 
-  // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
-  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+  if (sensor.timeoutOccurred()) {
+    Serial.println("Timeout ");
+    return;
+  }
 
-  // The same pin is used to read the signal from the PING))): a HIGH pulse
-  // whose duration is the time (in microseconds) from the sending of the ping
-  // to the reception of its echo off of an object.
-  duration = pulseIn(echoPin, HIGH);
+  // Convert to cm (like your old code)
+  int distance_cm = distance_mm / 17;
 
-  // convert the time into a distance
-  inches = microsecondsToInches(duration);
-  cm = microsecondsToCentimeters(duration);
+  double angle = getAngle(distance_cm, 17);
 
-  Serial.print(inches);
-  Serial.print("in, ");
-  Serial.print(cm);
-  Serial.print("cm");
-  Serial.println();
 
-  lcd.setCursor(9,0);   
-  lcd.print("                         ");  
-  lcd.setCursor(9,0);    
-  lcd.print(                cm); //Print measured distance
-  lcd.print(" cm");  //Print your units.
+  Serial.print("Height: ");
+  Serial.print(distance_cm);
+  Serial.println(" cm");
 
-  delay(1000);
-}
+  Serial.print("Angle: ");
+  Serial.print(angle);
+  Serial.println(" degrees");
 
-long microsecondsToInches(long microseconds) {
-  // According to Parallax's datasheet for the PING))), there are 73.746
-  // microseconds per inch (i.e. sound travels at 1130 feet per second).
-  // This gives the distance travelled by the ping, outbound and return,
-  // so we divide by 2 to get the distance of the obstacle.
-  // See: https://www.parallax.com/package/ping-ultrasonic-distance-sensor-downloads/
-  return microseconds / 74 / 2;
-}
+  // LCD display
+  lcd.setCursor(7,0);
+  lcd.print(angle);
+  lcd.print("o");
 
-long microsecondsToCentimeters(long microseconds) {
-  // The speed of sound is 340 m/s or 29 microseconds per centimeter.
-  // The ping travels out and back, so to find the distance of the object we
-  // take half of the distance travelled.
-  return microseconds / 29 / 2;
+  delay(500);
 }
