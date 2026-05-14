@@ -7,6 +7,8 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 VL53L0X sensor;
 
+unsigned long previousMillis = 0;
+int seconds = 0;
 
 double getAngle(double opp, double adj) {
     double angleRad = atan(opp / adj);   // angle in radians
@@ -43,6 +45,8 @@ void setup() {
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Angle:");
+  lcd.setCursor(0,1);
+  lcd.print("Timer:");
 
   Serial.println("Setup complete ");
 }
@@ -54,6 +58,17 @@ void loop() {
     Serial.println("Timeout ");
     return;
   }
+
+//timer
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= 1000) {
+      previousMillis = currentMillis;
+
+      seconds++;
+      Serial.print("Timer: ");
+      Serial.println(seconds);
+    }
 
   // Convert to cm (like your old code)
   int distance_cm = distance_mm / 17;
@@ -73,6 +88,10 @@ void loop() {
   lcd.setCursor(7,0);
   lcd.print(angle);
   lcd.print("o");
+
+  lcd.setCursor(7,1);
+  lcd.print(seconds);
+  lcd.print(" sec");
 
   delay(500);
 }
