@@ -19,10 +19,19 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
 
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Hallo Michelle");
+
+  delay(5000);
   // Initialize sensor
-  Serial.println("Initializing sensor...");
+
+  //Serial.println("Initializing sensor...");
   if (!sensor.init()) {
-    Serial.println("Failed to detect VL53L0X!");
+    lcd.clear();
+    lcd.print("Failed to detect VL53L0X!");
     while (1);
   }
 
@@ -30,18 +39,10 @@ void setup() {
   sensor.startContinuous();
 
   // Initialize LCD
-  lcd.init();
-  lcd.backlight();
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Team Michelle");
-  delay(5000);
 
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Distance:");
-  lcd.setCursor(0,1);
-  lcd.print("Height:");
+  lcd.print("Angle:");
 
   Serial.println("Setup complete ");
 }
@@ -55,34 +56,23 @@ void loop() {
   }
 
   // Convert to cm (like your old code)
-  int distance_cm = distance_mm / 10;
+  int distance_cm = distance_mm / 17;
 
-// chnage 10 to real distance 
+  double angle = getAngle(distance_cm, 17);
 
-  double angle = getAngle(distance_cm, 10);
-
-
-  // Serial output (same style as before)
-  Serial.print(cm);
-  Serial.print(" cm");
-  Serial.println();
 
   Serial.print("Height: ");
   Serial.print(distance_cm);
   Serial.println(" cm");
 
-  // LCD display
-  lcd.setCursor(9,0);
-  lcd.print("      ");  // clear old value
-  lcd.setCursor(9,0);
-  lcd.print(cm);
-  lcd.print(" cm");
+  Serial.print("Angle: ");
+  Serial.print(angle);
+  Serial.println(" degrees");
 
-  lcd.setCursor(9,1);
-  lcd.print("      ");
-  lcd.setCursor(9,1);
+  // LCD display
+  lcd.setCursor(7,0);
   lcd.print(angle);
-  lcd.print(" degrees");
+  lcd.print("o");
 
   delay(500);
 }
