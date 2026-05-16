@@ -75,6 +75,12 @@ void loop() {
 
   double angle = getAngle(distance_cm, 17);
 
+  if (distance_cm < 1) {
+      seconds = 0;
+      previousMillis = millis();   // restart timing from now
+
+      Serial.println("Timer reset");
+  }
 
   Serial.print("Height: ");
   Serial.print(distance_cm);
@@ -87,11 +93,11 @@ void loop() {
   // LCD display
   lcd.setCursor(7,0);
   lcd.print(angle);
-  lcd.print("o");
+  lcd.print(" o ");
 
   lcd.setCursor(7,1);
   lcd.print(seconds);
-  lcd.print(" sec");
+  lcd.print("  sec ");
 
   delay(500);
 }
